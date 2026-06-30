@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Laporan Harian</title>
+<style>
+:root{
+  --h:#1a7a4a;--hm:#2d9e62;--hl:#e8f5ee;--ht:#155c38;
+  --wa:#25d366;--wabg:#dcf8c6;--wab:#a8dea4;
+  --g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g300:#d1d5db;
+  --g500:#6b7280;--g700:#374151;--g900:#111827;
+  --xls:#217346;--r:10px;--sh:0 1px 4px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--g100);min-height:100vh;color:var(--g900);padding-bottom:48px}
+
+.topbar{background:var(--h);padding:13px 16px 11px;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.topbar-row{display:flex;justify-content:space-between;align-items:flex-start}
+.tt{color:#fff;font-size:15px;font-weight:600}
+.ts{color:rgba(255,255,255,.7);font-size:11px;margin-top:1px}
+.badge{background:rgba(255,255,255,.2);color:#fff;font-size:11px;padding:3px 8px;border-radius:20px}
+.pg{background:rgba(255,255,255,.25);border-radius:3px;height:3px;margin-top:9px}
+.pf{background:#fff;border-radius:3px;height:3px;transition:width .4s}
+
+.wrap{max-width:500px;margin:0 auto;padding:0 14px}
+.panel{display:none}.panel.active{display:block}
+
+.card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);margin-top:12px;padding:16px}
+.ct{font-size:12px;font-weight:700;color:var(--h);text-transform:uppercase;letter-spacing:.06em;margin-bottom:13px;display:flex;align-items:center;gap:6px}
+.ct::before{content:'';display:block;width:3px;height:13px;background:var(--h);border-radius:2px}
+
+.f{margin-bottom:11px}.f:last-child{margin-bottom:0}
+.f label{display:block;font-size:12px;font-weight:600;color:var(--g700);margin-bottom:4px}
+.f label .req{color:#dc2626;margin-left:2px}
+.f input,.f textarea,.f select{width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:8px;font-size:14px;color:var(--g900);background:var(--g50);transition:border-color .15s;outline:none;font-family:inherit}
+.f input:focus,.f textarea:focus,.f select:focus{border-color:var(--hm);box-shadow:0 0 0 3px rgba(45,158,98,.1);background:#fff}
+.f input[readonly]{background:var(--g100);color:var(--g500)}
+.f textarea{resize:vertical;min-height:70px;line-height:1.5}
+.f select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.f select optgroup{font-weight:700;color:var(--h);font-size:12px}
+.f select option{font-weight:400;color:var(--g900);font-size:14px}
+.hint{font-size:11px;color:var(--g500);margin-top:3px}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.r3{display:grid;grid-template-columns:1fr 1fr 76px;gap:7px}
+.r3 .f,.r2 .f{margin-bottom:0}
+
+.unit{background:var(--g50);border:1.5px solid var(--g200);border-radius:8px;padding:11px;margin-bottom:9px;position:relative}
+.unit:last-child{margin-bottom:0}
+.ul{font-size:12px;font-weight:700;color:var(--h);margin-bottom:9px;display:flex;justify-content:space-between;align-items:center}
+.btn-hapus{background:none;border:none;color:#dc2626;font-size:18px;cursor:pointer;padding:0 2px;line-height:1}
+.btn-add{width:100%;padding:8px;border:1.5px dashed var(--g300);border-radius:8px;background:transparent;color:var(--g500);font-size:13px;cursor:pointer;margin-top:8px;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px}
+.btn-add:hover{border-color:var(--hm);color:var(--h);background:var(--hl)}
+
+.rg{display:flex;flex-direction:column;gap:6px}
+.ro{display:flex;align-items:center;gap:8px;padding:9px 11px;border:1.5px solid var(--g200);border-radius:8px;cursor:pointer;background:var(--g50);transition:all .15s}
+.ro:hover,.ro.sel{border-color:var(--h);background:var(--hl)}
+.ro input{accent-color:var(--h);width:15px;height:15px;flex-shrink:0}
+.ro span{font-size:13px;color:var(--g700)}
+
+.nav{display:flex;gap:8px;margin-top:14px}
+.bb{flex:1;padding:10px;border:1.5px solid var(--g300);border-radius:var(--r);background:#fff;color:var(--g700);font-size:13px;font-weight:500;cursor:pointer}
+.bn{flex:2;padding:10px;border:none;border-radius:var(--r);background:var(--h);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.bn:hover{background:var(--hm)}
+.bf{flex:1}
+
+.sg{margin-bottom:11px}
+.sl{font-size:11px;font-weight:700;color:var(--h);text-transform:uppercase;letter-spacing:.06em;border-bottom:1.5px solid var(--hl);padding-bottom:4px;margin-bottom:5px}
+.sr{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid var(--g100)}
+.sr:last-child{border-bottom:none}
+.sk{font-size:12px;color:var(--g500);flex-shrink:0;max-width:45%}
+.sv{font-size:12px;color:var(--g900);font-weight:600;text-align:right;word-break:break-word}
+
+.wa-card{background:var(--wabg);border:1.5px solid var(--wab);border-radius:var(--r);padding:13px;margin-top:12px}
+.wa-hd{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.wa-ic{width:28px;height:28px;background:var(--wa);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0}
+.wa-lb{font-size:13px;font-weight:700;color:#1a5e20}
+.wa-sb{font-size:11px;color:#2e7d32}
+.wa-tx{font-size:12px;color:#1b5e20;line-height:1.7;white-space:pre-wrap;font-family:'Courier New',monospace;background:rgba(255,255,255,.55);border-radius:8px;padding:9px;max-height:280px;overflow-y:auto}
+
+.btn-wa{width:100%;margin-top:10px;padding:12px;border:none;border-radius:var(--r);background:var(--wa);color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 2px 8px rgba(37,211,102,.3)}
+.toast{display:none;text-align:center;font-size:12px;font-weight:600;color:var(--ht);background:var(--hl);border-radius:8px;padding:9px;margin-top:7px}
+.btn-reset{width:100%;padding:9px;border:1.5px solid var(--g300);border-radius:var(--r);background:#fff;color:var(--g500);font-size:12px;cursor:pointer;margin-top:8px}
+.pill{display:flex;align-items:flex-start;gap:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-top:10px}
+.pill-txt{font-size:12px;color:#166534;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-row">
+    <div><div class="tt">📋 Laporan Harian</div><div class="ts" id="tsub">Karyawan Lapangan</div></div>
+    <div class="badge" id="tbadge">1/4</div>
+  </div>
+  <div class="pg"><div class="pf" id="prog" style="width:25%"></div></div>
+</div>
+
+<div class="wrap">
+
+<!-- P1: IDENTITAS -->
+<div class="panel active" id="p1">
+  <div class="card">
+    <div class="ct">Identitas &amp; Tanggal</div>
+    <div class="f">
+      <label>Nama Karyawan <span class="req">*</span></label>
+      <select id="nama">
+        <option value="">-- Pilih Nama --</option>
+        <option>Agung Indra Wardana</option>
+        <option>Bonefasius Gandur</option>
+        <option>Dadang Sujana</option>
+        <option>Dominukus Nabur</option>
+        <option>Fabianus Narman</option>
+        <option>Fransiska Juliani Sardi</option>
+        <option>Fransiskus Duari</option>
+        <option>Fransiskus Jemisil</option>
+        <option>Gregorius Aris Tasak</option>
+        <option>Jemmy Imanuel Elim</option>
+        <option>Lilis Sulistiowati</option>
+        <option>Merliana Elsani</option>
+        <option>Nikita Lydia Noviani Sumito</option>
+        <option>Petronela Idi Nage</option>
+        <option>Robertus Surman</option>
+        <option>Selfianus Dedi</option>
+        <option>Thadeus Novembris Adil</option>
+        <option>Vinsensia Hilde</option>
+        <option>Wihelmus Duka Riang</option>
+        <option>Yohanes Asyu Mardi Iron</option>
+        <option>Yosefa Cindi</option>
+      </select>
+    </div>
+    <div class="f">
+      <label>Lokasi Proyek <span class="req">*</span></label>
+      <select id="lokasi">
+        <option value="">-- Pilih Lokasi --</option>
+        <option>AMP GOLOMONGKOK</option>
+        <option>AMP KENARI</option>
+        <option>AMP WAEPESI</option>
+        <option>CIAO</option>
+        <option>KANTOR COWANG DERENG</option>
+        <option>KANTOR PUSAT RUTENG</option>
+        <option>KANTOR SURABAYA</option>
+        <option>KEBUN DALONG</option>
+        <option>QUARRY WAERENO-ROBO</option>
+        <option>WORKSHOP LEDA</option>
+        <option>WORKSHOP REMPAH</option>
+        <option>PROYEK LAINNYA</option>
+      </select>
+    </div>
+    <div class="f">
+      <label>Tanggal Laporan <span class="req">*</span></label>
+      <input id="tgl" type="date">
+      <div class="hint">Tanggal hanya bisa diisi maksimal 7 hari ke belakang sampai hari ini</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ct">📑 Pilih Jenis Laporan</div>
+    <div class="f">
+      <label>Jenis Laporan <span class="req">*</span></label>
+      <select id="jenis_laporan" onchange="onJenisChange()">
+        <option value="">-- Pilih Jenis Laporan --</option>
+        <option value="biasa">Laporan Hasil Kerja Biasa</option>
+        <option value="bbm">Laporan Hasil Kerja BBM</option>
+      </select>
+      <div class="hint">Pilih BBM jika hari ini ada pemakaian alat berat / kendaraan. Pilih Biasa untuk laporan kegiatan umum.</div>
+    </div>
+  </div>
+
+  <div class="nav"><button class="bn bf" id="btn-lanjut-p1" onclick="next(1)">Lanjut →</button></div>
+</div>
+
+<!-- P1B: LAPORAN BIASA (kalimat bebas) -->
+<div class="panel" id="p1b">
+  <div class="card">
+    <div class="ct">📝 Hasil Kerja Hari Ini</div>
+    <div class="f">
+      <label>Uraikan hasil kerja hari ini <span class="req">*</span></label>
+      <textarea id="hasil_biasa" rows="6" placeholder="Tulis kegiatan dan hasil kerja hari ini dalam bentuk kalimat. Contoh: Hari ini melakukan pemeliharaan area workshop, membersihkan gudang, dan membantu bongkar muat material."></textarea>
+    </div>
+  </div>
+  <div class="nav"><button class="bb" onclick="go(1)">← Kembali</button><button class="bn" onclick="nextFromBiasa()">Lanjut →</button></div>
+</div>
+
+<!-- P2: BBM -->
+<div class="panel" id="p2">
+  <div class="card">
+    <div class="ct">⛽ Stok BBM Lokasi</div>
+    <div class="r2">
+      <div class="f"><label>Stok Awal (Ltr)</label><input id="stok_awal" type="number" placeholder="0" oninput="calcBBM()"></div>
+      <div class="f"><label>BBM Masuk (Ltr)</label><input id="masuk_cd" type="number" placeholder="0" oninput="calcBBM()"></div>
+    </div>
+    <div class="r2" style="margin-top:9px">
+      <div class="f"><label>Total (Ltr)</label><input id="stok_total" type="number" readonly placeholder="—"></div>
+      <div class="f"><label>Sisa (Ltr)</label><input id="stok_sisa" type="number" readonly placeholder="—"></div>
+    </div>
+    <div class="hint" style="margin-top:7px">Total dan Sisa dihitung otomatis</div>
+  </div>
+  <div class="nav"><button class="bb" onclick="go(1)">← Kembali</button><button class="bn" onclick="next(2)">Lanjut →</button></div>
+</div>
+
+<!-- P3: HASIL KERJA -->
+<div class="panel" id="p3">
+  <div class="card">
+    <div class="ct">🚧 Hasil Kerja</div>
+    <div id="unit-list">
+      <div class="unit">
+        <div class="ul"><span>⚙️ Unit 1</span><button class="btn-hapus" onclick="hapusUnit(this)" title="Hapus unit ini">×</button></div>
+        <div class="f">
+          <label>Alat Berat / Kendaraan</label>
+          <select class="unit-alat">
+            <option value="">-- Pilih Unit --</option>
+            <optgroup label="── KENDARAAN ──">
+              <option>MAP 2 COLT 120ps</option>
+              <option>MAP 7 COLT 120ps</option>
+              <option>MAP 9 COLT 120ps</option>
+              <option>MAP 15 COLT 135ps</option>
+              <option>MAP 17 HINO LOHAN</option>
+              <option>MAP 20 FUSO FIGHTER</option>
+              <option>MAP 23 NISSAN CK 87</option>
+              <option>MAP 26 NISSAN CK 12 TURBO</option>
+              <option>MAP 27 NISSAN CK 12 TURBO</option>
+              <option>MAP 28 HINO DUTRO 130ps</option>
+              <option>MAP 30 HINO DUTRO 130ps</option>
+              <option>MAP 31 HINO DUTRO 130ps</option>
+              <option>MAP 32 HINO DUTRO 130ps</option>
+              <option>MAP 33 HINO DUTRO 130ps</option>
+              <option>MAP 34 HINO DUTRO 130ps</option>
+              <option>MAP 35 HINO DUTRO 130ps</option>
+              <option>MAP 36 HINO DUTRO 130ps</option>
+              <option>MAP 37 HINO DUTRO 130ps</option>
+              <option>MAP 38 HINO DUTRO 130ps</option>
+              <option>MAP 39 HINO DUTRO 130ps</option>
+              <option>MAP 40 TRONTON NISSAN CWB</option>
+              <option>MAP 42 TRONTON ISUZU CXZ</option>
+              <option>MAP 46 COLT HD 120ps</option>
+              <option>MAP 48 COLT HD 120ps</option>
+              <option>MAP 50 CANTER HD 136ps</option>
+              <option>MAP 51 CANTER HD 136ps</option>
+              <option>MAP 52 HINO DUTRO 130ps</option>
+              <option>MAP 53 HINO DUTRO 130ps</option>
+              <option>MAP 54 HINO DUTRO 130ps</option>
+              <option>MAP 55 HINO DUTRO 130ps</option>
+              <option>MAP 56 HINO LOHAN 235ps</option>
+              <option>MAP 57 NISSAN EURO 190ps</option>
+              <option>MAP 58 NISSAN EURO 190ps</option>
+              <option>MAP 59 NISSAN EURO 190ps</option>
+              <option>MAP 60 NISSAN TRONTON</option>
+              <option>MAP 62 NISSAN TRONTON</option>
+              <option>MAP 63 NISSAN TRONTON</option>
+              <option>MAP 64 NISSAN TRONTON</option>
+              <option>MAP 65 NISSAN TRONTON</option>
+              <option>MAP 66 NISSAN TRONTON</option>
+              <option>MAP 67 HINO DUTRO 130ps</option>
+              <option>MAP 68 HINO LOHAN 235ps</option>
+              <option>MAP 69 ISUZU MNR 71T HD 6.1</option>
+              <option>MAP 70 ISUZU MNR 71T HD 6.1</option>
+              <option>MAP 71 ISUZU MNR 71T HD 6.1</option>
+              <option>MAP 72 ISUZU MNR 71T HD 6.1</option>
+              <option>MAP 73 ISUZU MNR 71T HD 6.1</option>
+              <option>MAP 74 ISUZU MNR 71T HD 6.1</option>
+              <option>MAP 75 ISUZU MNR 71T HD 6.1</option>
+              <option>MAP 76 ISUZU MNR 71T HD 6.1</option>
+              <option>MAP 77 ISUZU MNR 71T HD 6.1</option>
+              <option>MAP 78 ISUZU MNR 71T HD 6.1</option>
+              <option>MAP 79 HINO DUTRO 130ps</option>
+              <option>MAP 80 MITSUBISHI FUSO CARMIX</option>
+              <option>MAP 81 MITSUBISHI FUSO CARMIX</option>
+              <option>MAP 82 HINO H07D</option>
+              <option>FIN KOMODO</option>
+              <option>CARRY MAP</option>
+              <option>CARRY CIAO</option>
+              <option>FORD RANGER</option>
+              <option>FORTUNER</option>
+              <option>HILINE</option>
+              <option>HILUX B 9071 DL</option>
+              <option>HILUX EB 8378 EB</option>
+              <option>LAND CRUISER</option>
+              <option>PAJERO</option>
+              <option>TERANO</option>
+              <option>MOTOR KAISAR</option>
+            </optgroup>
+            <optgroup label="── ALAT BERAT ──">
+              <option>LOADER KOM WA 180-3</option>
+              <option>LOADER KOM WA 200-3E</option>
+              <option>LOADER KOM WA 150-1</option>
+              <option>LOADER KOM WA 150-3</option>
+              <option>LOADER CAT 926E MAP</option>
+              <option>LOADER CAT 926E EX WAE KULI</option>
+              <option>LOADER CAT 926E EX RIA</option>
+              <option>LOADER KOM WA 100-3 EX GSI</option>
+              <option>LOADER KOM WA 200-3E EX GSI</option>
+              <option>LOADER KOM WA 350-3 EX GSI</option>
+              <option>EXCA TRUCK</option>
+              <option>EXCA HIT ZX210F 016</option>
+              <option>EXCA HIT ZX210F 017</option>
+              <option>EXCA HIT ZX200 018</option>
+              <option>EXCA HIT ZX200 019</option>
+              <option>EXCA HIT ZX200 020</option>
+              <option>EXCA KOB SK200-8 021</option>
+              <option>EXCA KOB SK200-8 022</option>
+              <option>EXCA KOM PC200-8</option>
+              <option>EXCA HIT ZX200-5G</option>
+              <option>EXCA KOM PC200-7 EX RIA</option>
+              <option>EXCA KOB SK200-10 EX GSI</option>
+              <option>EXCA KOM PC100-6</option>
+              <option>EXCA KOM PC100-5</option>
+              <option>EXCA KOM PC78UU-6EO 011</option>
+              <option>EXCA KOM PC78UU-6EO 012</option>
+              <option>EXCA KOM PC78UU-6EO EX GSI</option>
+              <option>DOZER KOM D65E-8</option>
+              <option>DOZER KOM D85ESS-2 FD-71</option>
+              <option>DOZER KOM D85ESS-2 FD-60</option>
+              <option>GRADER KOM GD600-1</option>
+              <option>GRADER KOM GD305-1</option>
+              <option>GRADER MITSUBISHI MG-230 EX ARUMBAI</option>
+              <option>GRADER KOM CABIN GD511A EX GSI</option>
+              <option>GRADER KOM CANOPY GD511A EX GSI</option>
+              <option>VIBRO DYNAPAC CA362D</option>
+              <option>VIBRO SAKAI SV-512D</option>
+              <option>VIBRO DYNAPAC CA302D EX GSI</option>
+              <option>TANDEM INGERSOLL RAND EX GSI</option>
+              <option>TANDEM VIBRO SAKAI SW-850 EX GSI</option>
+              <option>TANDEM VIBRO SAKAI SW-850</option>
+              <option>TANDEM VIBRO SAKAI SW5025-1</option>
+              <option>TANDEM VIBRO SAKAI SW330 EX GSI</option>
+              <option>TANDEM VIBRO DYNAPAC CC222</option>
+              <option>TANDEM JIN LING</option>
+              <option>TANDEM VIBRO SAKAI TG-25</option>
+              <option>THREE WHEEL BESAR SAKAI</option>
+              <option>TIRE ROLLER SAKAI TS-200 EX GSI</option>
+              <option>TIRE ROLLER SAKAI TS-7409</option>
+              <option>TIRE ROLLER SAKAI TS-7409 EX WAEKULI</option>
+              <option>FINISHER NIGATA NFB6W1 EX GSI</option>
+              <option>FINISHER NIGATA NF 6C</option>
+              <option>FINISHER NIGATA NF220</option>
+            </optgroup>
+            <optgroup label="── UNIT LAINNYA ──">
+              <option>GENSET</option>
+              <option>MESIN ALKON</option>
+              <option>PANAS ALAT</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="f"><label>Sopir / Operator</label><input class="unit-opr" type="text" placeholder="Nama sopir atau operator"></div>
+        <div class="r3">
+          <div class="f"><label>BBM (Ltr)</label><input class="unit-bbm" type="number" placeholder="0" oninput="calcBBM()"></div>
+          <div class="f"><label>Hasil</label><input class="unit-prod" type="text" placeholder="150"></div>
+          <div class="f"><label>Satuan</label><select class="unit-sat"><option>m3</option><option>ret</option><option>Ltr</option><option>jam</option><option>-</option></select></div>
+        </div>
+        <div class="f" style="margin-top:9px"><label>Keterangan Kegiatan</label><textarea class="unit-ket" placeholder="Contoh: roling ke lokasi, screen pasir 150m3, cuci di kali"></textarea></div>
+      </div>
+    </div>
+    <button class="btn-add" onclick="addUnit()">＋ Tambah Unit</button>
+  </div>
+  <div class="nav"><button class="bb" onclick="go(2)">← Kembali</button><button class="bn" onclick="next(3)">Lanjut →</button></div>
+</div>
+
+<!-- P4: KENDALA -->
+<div class="panel" id="p4">
+  <div class="card">
+    <div class="ct">⚠️ Kendala &amp; Catatan</div>
+    <div class="f">
+      <label>Kendala hari ini</label>
+      <div class="rg">
+        <label class="ro" id="rk0"><input type="radio" name="ada_kendala" value="tidak" onchange="showKendala(false)"><span>✅ Tidak ada kendala</span></label>
+        <label class="ro" id="rk1"><input type="radio" name="ada_kendala" value="ada" onchange="showKendala(true)"><span>⚠️ Ada kendala</span></label>
+      </div>
+    </div>
+    <div id="kd" style="display:none">
+      <div class="f" style="margin-top:9px"><label>Uraian Kendala</label><textarea id="kendala_urai" placeholder="Contoh: kurang dt untuk layan muat pasir ke kenari"></textarea></div>
+      <div class="f"><label>Tindakan / Solusi</label><textarea id="kendala_sol" placeholder="Solusi yang diambil atau perlu eskalasi"></textarea></div>
+    </div>
+    <div class="f" style="margin-top:9px"><label>Rencana Kerja Besok</label><textarea id="catatan" placeholder="Rencana, permintaan material, dll"></textarea></div>
+  </div>
+  <div class="card">
+    <label class="ro" id="rk-confirm" style="align-items:flex-start">
+      <input type="checkbox" id="konfirmasi" style="margin-top:2px">
+      <span style="font-weight:700">SAYA MENYATAKAN TELAH MENGISI LAPORAN HASIL KERJA DENGAN BENAR</span>
+    </label>
+  </div>
+  <div class="nav"><button class="bb" onclick="backFromKendala()">← Kembali</button><button class="bn" id="btn-lihat-rangkuman" onclick="cekKonfirmasi()">Lihat Rangkuman →</button></div>
+</div>
+
+<!-- P5: RANGKUMAN -->
+<div class="panel" id="p5">
+  <div class="card" id="sum-card"></div>
+  <div class="wa-card">
+    <div class="wa-hd">
+      <div class="wa-ic">💬</div>
+      <div><div class="wa-lb">Pesan WA Siap Kirim</div><div class="wa-sb">Tekan tombol hijau di bawah untuk menyalin</div></div>
+    </div>
+    <div class="wa-tx" id="wa-text"></div>
+  </div>
+  <div class="pill" id="gs-status" style="display:none"></div>
+  <button class="btn-wa" onclick="copyWA()">📋 Salin Pesan WA</button>
+  <div class="toast" id="toast-wa">✅ Tersalin! Buka grup WA dan tempel pesan.</div>
+  <div class="pill"><div class="pill-txt">💡 Data sudah otomatis tersimpan ke Google Sheets. Setelah salin pesan WA, tempel langsung di grup WA kantor.</div></div>
+  <button class="btn-reset" onclick="resetAll()">🔄 Isi Laporan Baru</button>
+  <div class="nav"><button class="bb" id="btn-kembali-edit" onclick="go(4)">← Kembali Edit</button></div>
+</div>
+
+</div>
+
+<script>
+// ===== KONEKSI GOOGLE SHEETS (Google Apps Script Web App) =====
+// Ganti URL di bawah ini dengan URL Web App hasil deploy Apps Script (lihat code.gs)
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzxoBZhgr8yrhXzLKcmpepQ7-7SIcHLne6ZCS--KwsgfI0nGOMA9jOMD4WFYJj7c8Pv7g/exec';
+
+let cur=1;
+let sudahSubmit=false; // mencegah kirim ganda / edit setelah submit
+let sedangKirim=false; // mencegah submit dobel kalau tombol ditekan berkali-kali
+const labels=['','Identitas','Stok BBM','Hasil Kerja','Kendala','Rangkuman'];
+
+// ===== Batasan tanggal: hari ini s/d 7 hari ke belakang, tidak boleh besok =====
+function pad(n){return String(n).padStart(2,'0');}
+function toISODate(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
+
+function setupTglLimit(){
+  const today=new Date();
+  today.setHours(0,0,0,0);
+  const min=new Date(today);
+  min.setDate(min.getDate()-7);
+
+  const tglInput=document.getElementById('tgl');
+  tglInput.max=toISODate(today);
+  tglInput.min=toISODate(min);
+  tglInput.valueAsDate=today;
+
+  // Jaga-jaga jika staf coba ketik manual tanggal di luar batas
+  tglInput.addEventListener('change',()=>{
+    if(!tglInput.value) return;
+    const picked=new Date(tglInput.value+'T00:00:00');
+    if(picked>today){
+      alert('Tanggal laporan tidak boleh lebih dari hari ini (tidak boleh tanggal besok).');
+      tglInput.valueAsDate=today;
+    } else if(picked<min){
+      alert('Tanggal laporan maksimal 7 hari ke belakang dari hari ini.');
+      tglInput.valueAsDate=today;
+    }
+  });
+}
+setupTglLimit();
+
+function go(n){
+  // Sembunyikan SEMUA panel, lalu tampilkan panel tujuan (lebih aman dari salah index)
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId(n)).classList.add('active');
+  cur=n;
+  updateTopbar(n);
+  window.scrollTo(0,0);
+}
+
+function panelId(n){
+  if(n===1) return 'p1';
+  if(n===1.5) return 'p1b';
+  if(n===2) return 'p2';
+  if(n===3) return 'p3';
+  if(n===4) return 'p4';
+  if(n===5) return 'p5';
+  return 'p1';
+}
+
+function updateTopbar(n){
+  const jenis=document.getElementById('jenis_laporan')?.value;
+  let label='', badge='', pct=25;
+  if(n===1){label='Identitas';badge='1/'+(jenis==='biasa'?'3':'4');pct=jenis==='biasa'?33:25;}
+  else if(n===1.5){label='Hasil Kerja (Biasa)';badge='2/3';pct=66;}
+  else if(n===2){label='Stok BBM';badge='2/4';pct=50;}
+  else if(n===3){label='Hasil Kerja';badge='3/4';pct=75;}
+  else if(n===4){label='Kendala';badge=jenis==='biasa'?'3/3':'4/4';pct=100;}
+  else if(n===5){label='Rangkuman';badge='✓';pct=100;}
+  document.getElementById('tbadge').textContent=badge;
+  document.getElementById('tsub').textContent=label;
+  document.getElementById('prog').style.width=pct+'%';
+}
+
+function onJenisChange(){}
+
+function next(from){
+  if(from===1){
+    if(!v('nama')){alert('Nama karyawan wajib dipilih');return}
+    if(!v('lokasi')){alert('Lokasi proyek wajib dipilih');return}
+    if(!v('tgl')){alert('Tanggal wajib diisi');return}
+
+    const tglInput=document.getElementById('tgl');
+    const picked=new Date(tglInput.value+'T00:00:00');
+    const today=new Date(); today.setHours(0,0,0,0);
+    const min=new Date(today); min.setDate(min.getDate()-7);
+    if(picked>today){ alert('Tanggal laporan tidak boleh lebih dari hari ini (tidak boleh tanggal besok).'); return; }
+    if(picked<min){ alert('Tanggal laporan maksimal 7 hari ke belakang dari hari ini.'); return; }
+
+    const jenis=v('jenis_laporan');
+    if(!jenis){alert('Jenis laporan wajib dipilih');return}
+
+    if(jenis==='biasa'){ go(1.5); } else { go(2); }
+    return;
+  }
+  go(from+1);
+}
+
+function nextFromBiasa(){
+  if(!v('hasil_biasa')){alert('Uraian hasil kerja wajib diisi');return}
+  go(4);
+}
+
+function backFromKendala(){
+  const jenis=v('jenis_laporan');
+  if(jenis==='biasa'){ go(1.5); } else { go(3); }
+}
+
+function v(id){return document.getElementById(id)?.value.trim()||''}
+
+function calcBBM(){
+  const a=+document.getElementById('stok_awal').value||0;
+  const b=+document.getElementById('masuk_cd').value||0;
+  document.getElementById('stok_total').value=(a+b)||'';
+  let k=0;
+  document.querySelectorAll('.unit-bbm').forEach(el=>k+=(+el.value||0));
+  document.getElementById('stok_sisa').value=((a+b)-k)||'';
+}
+
+function buatSelectUnit(){
+  return `<select class="unit-alat">
+    <option value="">-- Pilih Unit --</option>
+    <optgroup label="── KENDARAAN ──">
+      <option>MAP 2 COLT 120ps</option><option>MAP 7 COLT 120ps</option><option>MAP 9 COLT 120ps</option>
+      <option>MAP 15 COLT 135ps</option><option>MAP 17 HINO LOHAN</option><option>MAP 20 FUSO FIGHTER</option>
+      <option>MAP 23 NISSAN CK 87</option><option>MAP 26 NISSAN CK 12 TURBO</option><option>MAP 27 NISSAN CK 12 TURBO</option>
+      <option>MAP 28 HINO DUTRO 130ps</option><option>MAP 30 HINO DUTRO 130ps</option><option>MAP 31 HINO DUTRO 130ps</option>
+      <option>MAP 32 HINO DUTRO 130ps</option><option>MAP 33 HINO DUTRO 130ps</option><option>MAP 34 HINO DUTRO 130ps</option>
+      <option>MAP 35 HINO DUTRO 130ps</option><option>MAP 36 HINO DUTRO 130ps</option><option>MAP 37 HINO DUTRO 130ps</option>
+      <option>MAP 38 HINO DUTRO 130ps</option><option>MAP 39 HINO DUTRO 130ps</option><option>MAP 40 TRONTON NISSAN CWB</option>
+      <option>MAP 42 TRONTON ISUZU CXZ</option><option>MAP 46 COLT HD 120ps</option><option>MAP 48 COLT HD 120ps</option>
+      <option>MAP 50 CANTER HD 136ps</option><option>MAP 51 CANTER HD 136ps</option><option>MAP 52 HINO DUTRO 130ps</option>
+      <option>MAP 53 HINO DUTRO 130ps</option><option>MAP 54 HINO DUTRO 130ps</option><option>MAP 55 HINO DUTRO 130ps</option>
+      <option>MAP 56 HINO LOHAN 235ps</option><option>MAP 57 NISSAN EURO 190ps</option><option>MAP 58 NISSAN EURO 190ps</option>
+      <option>MAP 59 NISSAN EURO 190ps</option><option>MAP 60 NISSAN TRONTON</option><option>MAP 62 NISSAN TRONTON</option>
+      <option>MAP 63 NISSAN TRONTON</option><option>MAP 64 NISSAN TRONTON</option><option>MAP 65 NISSAN TRONTON</option>
+      <option>MAP 66 NISSAN TRONTON</option><option>MAP 67 HINO DUTRO 130ps</option><option>MAP 68 HINO LOHAN 235ps</option>
+      <option>MAP 69 ISUZU MNR 71T HD 6.1</option><option>MAP 70 ISUZU MNR 71T HD 6.1</option><option>MAP 71 ISUZU MNR 71T HD 6.1</option>
+      <option>MAP 72 ISUZU MNR 71T HD 6.1</option><option>MAP 73 ISUZU MNR 71T HD 6.1</option><option>MAP 74 ISUZU MNR 71T HD 6.1</option>
+      <option>MAP 75 ISUZU MNR 71T HD 6.1</option><option>MAP 76 ISUZU MNR 71T HD 6.1</option><option>MAP 77 ISUZU MNR 71T HD 6.1</option>
+      <option>MAP 78 ISUZU MNR 71T HD 6.1</option><option>MAP 79 HINO DUTRO 130ps</option><option>MAP 80 MITSUBISHI FUSO CARMIX</option>
+      <option>MAP 81 MITSUBISHI FUSO CARMIX</option><option>MAP 82 HINO H07D</option><option>FIN KOMODO</option>
+      <option>CARRY MAP</option><option>CARRY CIAO</option><option>FORD RANGER</option><option>FORTUNER</option>
+      <option>HILINE</option><option>HILUX B 9071 DL</option><option>HILUX EB 8378 EB</option>
+      <option>LAND CRUISER</option><option>PAJERO</option><option>TERANO</option><option>MOTOR KAISAR</option>
+    </optgroup>
+    <optgroup label="── ALAT BERAT ──">
+      <option>LOADER KOM WA 180-3</option><option>LOADER KOM WA 200-3E</option><option>LOADER KOM WA 150-1</option>
+      <option>LOADER KOM WA 150-3</option><option>LOADER CAT 926E MAP</option><option>LOADER CAT 926E EX WAE KULI</option>
+      <option>LOADER CAT 926E EX RIA</option><option>LOADER KOM WA 100-3 EX GSI</option><option>LOADER KOM WA 200-3E EX GSI</option>
+      <option>LOADER KOM WA 350-3 EX GSI</option><option>EXCA TRUCK</option><option>EXCA HIT ZX210F 016</option>
+      <option>EXCA HIT ZX210F 017</option><option>EXCA HIT ZX200 018</option><option>EXCA HIT ZX200 019</option>
+      <option>EXCA HIT ZX200 020</option><option>EXCA KOB SK200-8 021</option><option>EXCA KOB SK200-8 022</option>
+      <option>EXCA KOM PC200-8</option><option>EXCA HIT ZX200-5G</option><option>EXCA KOM PC200-7 EX RIA</option>
+      <option>EXCA KOB SK200-10 EX GSI</option><option>EXCA KOM PC100-6</option><option>EXCA KOM PC100-5</option>
+      <option>EXCA KOM PC78UU-6EO 011</option><option>EXCA KOM PC78UU-6EO 012</option><option>EXCA KOM PC78UU-6EO EX GSI</option>
+      <option>DOZER KOM D65E-8</option><option>DOZER KOM D85ESS-2 FD-71</option><option>DOZER KOM D85ESS-2 FD-60</option>
+      <option>GRADER KOM GD600-1</option><option>GRADER KOM GD305-1</option><option>GRADER MITSUBISHI MG-230 EX ARUMBAI</option>
+      <option>GRADER KOM CABIN GD511A EX GSI</option><option>GRADER KOM CANOPY GD511A EX GSI</option>
+      <option>VIBRO DYNAPAC CA362D</option><option>VIBRO SAKAI SV-512D</option><option>VIBRO DYNAPAC CA302D EX GSI</option>
+      <option>TANDEM INGERSOLL RAND EX GSI</option><option>TANDEM VIBRO SAKAI SW-850 EX GSI</option><option>TANDEM VIBRO SAKAI SW-850</option>
+      <option>TANDEM VIBRO SAKAI SW5025-1</option><option>TANDEM VIBRO SAKAI SW330 EX GSI</option><option>TANDEM VIBRO DYNAPAC CC222</option>
+      <option>TANDEM JIN LING</option><option>TANDEM VIBRO SAKAI TG-25</option><option>THREE WHEEL BESAR SAKAI</option>
+      <option>TIRE ROLLER SAKAI TS-200 EX GSI</option><option>TIRE ROLLER SAKAI TS-7409</option><option>TIRE ROLLER SAKAI TS-7409 EX WAEKULI</option>
+      <option>FINISHER NIGATA NFB6W1 EX GSI</option><option>FINISHER NIGATA NF 6C</option><option>FINISHER NIGATA NF220</option>
+    </optgroup>
+    <optgroup label="── UNIT LAINNYA ──">
+      <option>GENSET</option><option>MESIN ALKON</option><option>PANAS ALAT</option>
+    </optgroup>
+  </select>`;
+}
+
+function addUnit(){
+  const list=document.getElementById('unit-list');
+  const n=list.querySelectorAll('.unit').length+1;
+  const d=document.createElement('div');d.className='unit';
+  d.innerHTML=`<div class="ul"><span>⚙️ Unit ${n}</span><button class="btn-hapus" onclick="hapusUnit(this)" title="Hapus unit ini">×</button></div>
+    <div class="f"><label>Alat Berat / Kendaraan</label>${buatSelectUnit()}</div>
+    <div class="f"><label>Sopir / Operator</label><input class="unit-opr" type="text" placeholder="Nama sopir atau operator"></div>
+    <div class="r3">
+      <div class="f"><label>BBM (Ltr)</label><input class="unit-bbm" type="number" placeholder="0" oninput="calcBBM()"></div>
+      <div class="f"><label>Hasil</label><input class="unit-prod" type="text" placeholder="150"></div>
+      <div class="f"><label>Satuan</label><select class="unit-sat"><option>m3</option><option>ret</option><option>Ltr</option><option>jam</option><option>-</option></select></div>
+    </div>
+    <div class="f" style="margin-top:9px"><label>Keterangan Kegiatan</label><textarea class="unit-ket" placeholder="Kegiatan hari ini"></textarea></div>`;
+  list.appendChild(d);
+  renumberUnits();
+}
+
+function hapusUnit(btn){
+  const unit=btn.closest('.unit');
+  const list=document.getElementById('unit-list');
+  if(list.querySelectorAll('.unit').length<=1){alert('Minimal harus ada 1 unit.');return;}
+  unit.remove();
+  renumberUnits();
+  calcBBM();
+}
+
+function renumberUnits(){
+  document.querySelectorAll('#unit-list .unit').forEach((u,i)=>{
+    const lbl=u.querySelector('.ul span');
+    if(lbl)lbl.textContent=`⚙️ Unit ${i+1}`;
+  });
+}
+
+function showKendala(show){
+  document.getElementById('kd').style.display=show?'block':'none';
+  document.querySelectorAll('.ro').forEach(el=>el.classList.remove('sel'));
+  document.querySelector('[name=ada_kendala]:checked')?.closest('.ro')?.classList.add('sel');
+}
+
+function fmtDate(d){
+  if(!d)return'-';
+  const[y,m,day]=d.split('-');
+  const bln=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  return `${day}/${bln[+m-1]}/${y}`;
+}
+function fmtDateFile(d){return d?d.replace(/-/g,''):''}
+
+function getUnits(){
+  return Array.from(document.querySelectorAll('#unit-list .unit')).map(b=>({
+    alat:b.querySelector('.unit-alat')?.value.trim()||'',
+    opr:b.querySelector('.unit-opr')?.value.trim()||'',
+    bbm:b.querySelector('.unit-bbm')?.value.trim()||'0',
+    prod:b.querySelector('.unit-prod')?.value.trim()||'-',
+    sat:b.querySelector('.unit-sat')?.value||'m3',
+    ket:b.querySelector('.unit-ket')?.value.trim()||''
+  })).filter(u=>u.alat);
+}
+
+function collectData(){
+  return{
+    nama:v('nama'),lokasi:v('lokasi'),tgl:v('tgl'),
+    jenis:v('jenis_laporan'),
+    hasilBiasa:v('hasil_biasa'),
+    stokAwal:v('stok_awal')||'0',masukCD:v('masuk_cd')||'0',
+    total:v('stok_total')||'0',sisa:v('stok_sisa')||'-',
+    units:getUnits(),
+    rkVal:document.querySelector('[name=ada_kendala]:checked')?.value||'',
+    ku:v('kendala_urai'),ks:v('kendala_sol'),cat:v('catatan')
+  };
+}
+
+function kirimKeServer(d, onResult){
+  // fetch() biasa. Ini hanya bisa diandalkan kalau form di-hosting di HTTPS
+  // (mis. GitHub Pages) — tidak akan jalan kalau dibuka dari file:// lokal.
+  fetch(GAS_URL,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'}, // hindari preflight CORS
+    body:JSON.stringify(d)
+  })
+  .then(r=>r.json())
+  .then(res=>onResult(res))
+  .catch(()=>onResult({status:'error'}));
+}
+
+function cekKonfirmasi(){
+  if(sudahSubmit){
+    go(5);
+    return;
+  }
+  if(sedangKirim){
+    return; // sedang ada proses kirim berjalan, abaikan klik tambahan
+  }
+  const chk=document.getElementById('konfirmasi');
+  const box=document.getElementById('rk-confirm');
+  if(!chk.checked){
+    box.style.borderColor='#dc2626';
+    box.style.background='#fef2f2';
+    alert('Centang dulu pernyataan "SAYA MENYATAKAN TELAH MENGISI LAPORAN HASIL KERJA DENGAN BENAR" sebelum melanjutkan ke Rangkuman.');
+    chk.focus();
+    return;
+  }
+  box.style.borderColor='';
+  box.style.background='';
+
+  const d=collectData();
+  if(!d.nama||!d.tgl){
+    alert('Nama dan Tanggal belum lengkap. Silakan kembali ke langkah Identitas terlebih dahulu.');
+    return;
+  }
+
+  if(!GAS_URL || GAS_URL.indexOf('PASTE_URL')!==-1){
+    buildAndShow(d);
+    go(5);
+    return;
+  }
+
+  const btn=document.getElementById('btn-lihat-rangkuman');
+  sedangKirim=true;
+  if(btn){btn.disabled=true;btn.textContent='⏳ Mengirim...';}
+
+  kirimKeServer(d,function(res){
+    sedangKirim=false;
+    if(btn){btn.disabled=false;btn.textContent='Lihat Rangkuman →';}
+
+    if(res && res.status==='ok'){
+      buildAndShow(d);
+      go(5);
+      kunciForm();
+      const statusEl=document.getElementById('gs-status');
+      statusEl.style.display='flex';
+      statusEl.innerHTML='<div class="pill-txt">✅ Data tersimpan di Google Sheets.</div>';
+      return;
+    }
+    if(res && res.status==='duplicate'){
+      alert('⚠️ Laporan atas nama '+d.nama+' untuk tanggal '+fmtDate(d.tgl)+' sudah pernah dikirim sebelumnya.\n\nTidak bisa melihat Rangkuman atau mengirim laporan duplikat untuk nama dan tanggal yang sama. Kalau ini keliru, hubungi admin.');
+      return;
+    }
+    alert('⚠️ Gagal mengirim laporan (cek koneksi internet). Silakan tekan "Lihat Rangkuman →" sekali lagi untuk mencoba ulang.');
+  });
+}
+
+function buildAndShow(d){
+  d=d||collectData();
+  const isBiasa = d.jenis==='biasa';
+  let keluar=0; d.units.forEach(u=>keluar+=(+u.bbm||0));
+
+  // ---- Summary card ----
+  let sh=`<div class="ct">📄 Rangkuman Laporan</div>`;
+  sh+=`<div class="sg"><div class="sl">Identitas</div>
+    <div class="sr"><div class="sk">Karyawan</div><div class="sv">${d.nama}</div></div>
+    <div class="sr"><div class="sk">Lokasi</div><div class="sv">${d.lokasi}</div></div>
+    <div class="sr"><div class="sk">Tanggal</div><div class="sv">${fmtDate(d.tgl)}</div></div>
+    <div class="sr"><div class="sk">Jenis Laporan</div><div class="sv">${isBiasa?'Hasil Kerja Biasa':'Hasil Kerja BBM'}</div></div>
+  </div>`;
+
+  if(isBiasa){
+    sh+=`<div class="sg"><div class="sl">Hasil Kerja</div>
+      <div class="sr"><div class="sk" style="max-width:100%">${d.hasilBiasa}</div></div>
+    </div>`;
+  } else {
+    sh+=`<div class="sg"><div class="sl">Stok BBM Lokasi</div>
+      <div class="sr"><div class="sk">Stok Awal</div><div class="sv">${d.stokAwal} Ltr</div></div>
+      <div class="sr"><div class="sk">BBM Masuk</div><div class="sv">${d.masukCD} Ltr</div></div>
+      <div class="sr"><div class="sk">Total</div><div class="sv">${d.total} Ltr</div></div>
+      <div class="sr"><div class="sk">Keluar</div><div class="sv">${keluar||'-'} Ltr</div></div>
+      <div class="sr"><div class="sk">Sisa</div><div class="sv">${d.sisa} Ltr</div></div>
+    </div>`;
+    if(d.units.length){
+      sh+=`<div class="sg"><div class="sl">Hasil Kerja</div>`;
+      d.units.forEach(u=>{
+        sh+=`<div class="sr"><div class="sk">${u.alat}${u.opr?' / '+u.opr:''}</div><div class="sv">BBM:${u.bbm}L · ${u.prod} ${u.sat}</div></div>`;
+      });
+      sh+=`</div>`;
+    }
+  }
+  document.getElementById('sum-card').innerHTML=sh;
+
+  // ---- WA message ----
+  const kendalaBlock=d.rkVal==='ada'
+    ?`⚠️ *Kendala:*\n${d.ku||'-'}${d.ks?'\n🔧 Solusi: '+d.ks:''}`
+    :`✅ Tidak ada kendala`;
+
+  let waBody='';
+  if(isBiasa){
+    waBody=
+`📝 *HASIL KERJA*
+${d.hasilBiasa}
+━━━━━━━━━━━━━━━━━━━━
+${kendalaBlock}${d.cat?'\n\n📝 *Rencana Kerja Besok:*\n'+d.cat:''}
+━━━━━━━━━━━━━━━━━━━━`;
+  } else {
+    let waUnits='';
+    d.units.forEach(u=>{
+      waUnits+=`\n⚙️ *${u.alat}*${u.opr?' ('+u.opr+')':''}\n`;
+      waUnits+=`   BBM: ${u.bbm} Ltr  |  Hasil: ${u.prod} ${u.sat}\n`;
+      if(u.ket)waUnits+=`   ${u.ket}\n`;
+    });
+    waBody=
+`⛽ *STOK BBM LOKASI*
+Awal     : ${d.stokAwal} Ltr
+BBM Masuk: ${d.masukCD} Ltr
+Total    : ${d.total} Ltr
+Keluar   : ${keluar||'-'} Ltr
+Sisa     : ${d.sisa} Ltr
+━━━━━━━━━━━━━━━━━━━━
+🚧 *HASIL KERJA*${waUnits||'\n   (tidak ada data unit)\n'}━━━━━━━━━━━━━━━━━━━━
+${kendalaBlock}${d.cat?'\n\n📝 *Rencana Kerja Besok:*\n'+d.cat:''}
+━━━━━━━━━━━━━━━━━━━━`;
+  }
+
+  document.getElementById('wa-text').textContent=
+`📋 *HASIL KERJA HARIAN*
+📍 ${d.lokasi}  |  ${fmtDate(d.tgl)}
+👤 ${d.nama}
+━━━━━━━━━━━━━━━━━━━━
+${waBody}`;
+}
+
+function kunciForm(){
+  sudahSubmit=true;
+  const btn=document.getElementById('btn-kembali-edit');
+  if(btn){
+    btn.disabled=true;
+    btn.style.opacity='.5';
+    btn.style.cursor='not-allowed';
+    btn.textContent='🔒 Laporan sudah dikirim';
+  }
+}
+
+function fallbackCopy(txt){
+  const ta=document.createElement('textarea');
+  ta.value=txt;
+  ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:none;opacity:0;';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  ta.setSelectionRange(0,txt.length);
+  let ok=false;
+  try{ ok=document.execCommand('copy'); }catch(e){ ok=false; }
+  document.body.removeChild(ta);
+  return ok;
+}
+
+function copyWA(){
+  const txt=document.getElementById('wa-text').textContent;
+
+  if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
+    navigator.clipboard.writeText(txt)
+      .then(()=>showToast('toast-wa'))
+      .catch(()=>{
+        if(fallbackCopy(txt)) showToast('toast-wa');
+        else showCopyManual(txt);
+      });
+  } else {
+    if(fallbackCopy(txt)) showToast('toast-wa');
+    else showCopyManual(txt);
+  }
+}
+
+function showCopyManual(txt){
+  const waBox=document.getElementById('wa-text');
+  waBox.contentEditable=true;
+  const range=document.createRange();
+  range.selectNodeContents(waBox);
+  const sel=window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  alert('Penyalinan otomatis tidak didukung browser ini.\n\nTeks sudah diseleksi — tekan dan tahan, lalu pilih "Copy" / "Salin" secara manual.');
+}
+function showToast(id){const t=document.getElementById(id);t.style.display='block';setTimeout(()=>t.style.display='none',4000);}
+
+function resetAll(){
+  if(!confirm('Reset semua isian dan mulai laporan baru?'))return;
+  document.getElementById('gs-status').style.display='none';
+  sudahSubmit=false;
+  sedangKirim=false;
+  const btnKembali=document.getElementById('btn-kembali-edit');
+  if(btnKembali){
+    btnKembali.disabled=false;
+    btnKembali.style.opacity='';
+    btnKembali.style.cursor='';
+    btnKembali.textContent='← Kembali Edit';
+  }
+  const chk=document.getElementById('konfirmasi');
+  if(chk)chk.checked=false;
+  const box=document.getElementById('rk-confirm');
+  if(box){box.style.borderColor='';box.style.background='';}
+  ['stok_awal','masuk_cd','stok_total','stok_sisa','kendala_urai','kendala_sol','catatan','hasil_biasa'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('nama').value='';
+  document.getElementById('lokasi').value='';
+  document.getElementById('jenis_laporan').value='';
+  setupTglLimit();
+  document.getElementById('unit-list').innerHTML=`<div class="unit">
+    <div class="ul"><span>⚙️ Unit 1</span><button class="btn-hapus" onclick="hapusUnit(this)" title="Hapus unit ini">×</button></div>
+    <div class="f"><label>Alat Berat / Kendaraan</label>${buatSelectUnit()}</div>
+    <div class="f"><label>Sopir / Operator</label><input class="unit-opr" type="text" placeholder="Nama sopir atau operator"></div>
+    <div class="r3">
+      <div class="f"><label>BBM (Ltr)</label><input class="unit-bbm" type="number" placeholder="0" oninput="calcBBM()"></div>
+      <div class="f"><label>Hasil</label><input class="unit-prod" type="text" placeholder="150"></div>
+      <div class="f"><label>Satuan</label><select class="unit-sat"><option>m3</option><option>ret</option><option>Ltr</option><option>jam</option><option>-</option></select></div>
+    </div>
+    <div class="f" style="margin-top:9px"><label>Keterangan Kegiatan</label><textarea class="unit-ket" placeholder="Kegiatan hari ini"></textarea></div>
+  </div>`;
+  document.querySelectorAll('[name=ada_kendala]').forEach(r=>r.checked=false);
+  document.querySelectorAll('.ro').forEach(el=>el.classList.remove('sel'));
+  document.getElementById('kd').style.display='none';
+  go(1);
+}
+</script>
+</body>
+</html>
