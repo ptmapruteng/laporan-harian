@@ -639,7 +639,10 @@ function collectData(){
     total:v('stok_total')||'0',sisa:v('stok_sisa')||'-',
     units:getUnits(),
     rkVal:document.querySelector('[name=ada_kendala]:checked')?.value||'',
-    ku:v('kendala_urai'),ks:v('kendala_sol'),cat:v('catatan')
+    ku:v('kendala_urai'),ks:v('kendala_sol'),cat:v('catatan'),
+    pernyataan: document.getElementById('konfirmasi')?.checked
+      ? 'SAYA MENYATAKAN TELAH MENGISI LAPORAN HASIL KERJA DENGAN BENAR'
+      : ''
   };
 }
 
