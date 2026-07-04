@@ -764,9 +764,9 @@ function buildAndShow(d){
     waBody=
 `📝 *HASIL KERJA*
 ${d.hasilBiasa}
-━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━
 ${kendalaBlock}${d.cat?'\n\n📝 *Rencana Kerja Besok:*\n'+d.cat:''}
-━━━━━━━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━━`;
   } else {
     let waUnits='';
     d.units.forEach(u=>{
@@ -781,17 +781,17 @@ BBM Masuk: ${d.masukCD} Ltr
 Total    : ${d.total} Ltr
 Keluar   : ${keluar||'-'} Ltr
 Sisa     : ${d.sisa} Ltr
-━━━━━━━━━━━━━━━━━━━━
-🚧 *HASIL KERJA*${waUnits||'\n   (tidak ada data unit)\n'}━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━
+🚧 *HASIL KERJA*${waUnits||'\n   (tidak ada data unit)\n'}━━━━━━━━━━━━━━━
 ${kendalaBlock}${d.cat?'\n\n📝 *Rencana Kerja Besok:*\n'+d.cat:''}
-━━━━━━━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━━`;
   }
 
   document.getElementById('wa-text').textContent=
 `📋 *HASIL KERJA HARIAN*
 📍 ${d.lokasi}  |  ${fmtDate(d.tgl)}
 👤 ${d.nama}
-━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━
 ${waBody}`;
 }
 
