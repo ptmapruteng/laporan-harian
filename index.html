@@ -667,7 +667,7 @@ function cekKonfirmasi(){
     return;
   }
   if(sedangKirim){
-    return; // sedang ada proses kirim berjalan, abaikan klik tambahan
+    return;
   }
   const chk=document.getElementById('konfirmasi');
   const box=document.getElementById('rk-confirm');
@@ -701,20 +701,16 @@ function cekKonfirmasi(){
     sedangKirim=false;
     if(btn){btn.disabled=false;btn.textContent='Lihat Rangkuman →';}
 
+    buildAndShow(d);
+    go(5);
+    kunciForm();
+    const statusEl=document.getElementById('gs-status');
+    statusEl.style.display='flex';
     if(res && res.status==='ok'){
-      buildAndShow(d);
-      go(5);
-      kunciForm();
-      const statusEl=document.getElementById('gs-status');
-      statusEl.style.display='flex';
       statusEl.innerHTML='<div class="pill-txt">✅ Data tersimpan di Google Sheets.</div>';
-      return;
+    } else {
+      statusEl.innerHTML='<div class="pill-txt">⚠️ Data mungkin belum tersimpan — cek koneksi internet dan hubungi admin jika perlu.</div>';
     }
-    if(res && res.status==='duplicate'){
-      alert('⚠️ Laporan atas nama '+d.nama+' untuk tanggal '+fmtDate(d.tgl)+' sudah pernah dikirim sebelumnya.\n\nTidak bisa melihat Rangkuman atau mengirim laporan duplikat untuk nama dan tanggal yang sama. Kalau ini keliru, hubungi admin.');
-      return;
-    }
-    alert('⚠️ Gagal mengirim laporan (cek koneksi internet). Silakan tekan "Lihat Rangkuman →" sekali lagi untuk mencoba ulang.');
   });
 }
 
@@ -764,9 +760,9 @@ function buildAndShow(d){
     waBody=
 `📝 *HASIL KERJA*
 ${d.hasilBiasa}
-━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 ${kendalaBlock}${d.cat?'\n\n📝 *Rencana Kerja Besok:*\n'+d.cat:''}
-━━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━━━━━━━`;
   } else {
     let waUnits='';
     d.units.forEach(u=>{
@@ -781,17 +777,17 @@ BBM Masuk: ${d.masukCD} Ltr
 Total    : ${d.total} Ltr
 Keluar   : ${keluar||'-'} Ltr
 Sisa     : ${d.sisa} Ltr
-━━━━━━━━━━━━━━━
-🚧 *HASIL KERJA*${waUnits||'\n   (tidak ada data unit)\n'}━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
+🚧 *HASIL KERJA*${waUnits||'\n   (tidak ada data unit)\n'}━━━━━━━━━━━━━━━━━━━━
 ${kendalaBlock}${d.cat?'\n\n📝 *Rencana Kerja Besok:*\n'+d.cat:''}
-━━━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━━━━━━━━`;
   }
 
   document.getElementById('wa-text').textContent=
 `📋 *HASIL KERJA HARIAN*
 📍 ${d.lokasi}  |  ${fmtDate(d.tgl)}
 👤 ${d.nama}
-━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 ${waBody}`;
 }
 
