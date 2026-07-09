@@ -707,6 +707,9 @@ function buildAndShow(d){
   d=d||collectData();
   let keluar=0; d.units.forEach(u=>keluar+=(+u.bbm||0));
 
+  // Cek apakah stok BBM diisi atau semua nol/kosong
+  const adaStokBBM=(+d.stokAwal||0)+(+d.masukCD||0)+(+d.total||0)>0;
+
   // ---- Summary card ----
   let sh=`<div class="ct">📄 Rangkuman Laporan</div>`;
   sh+=`<div class="sg"><div class="sl">Identitas</div>
@@ -715,13 +718,15 @@ function buildAndShow(d){
     <div class="sr"><div class="sk">Tanggal</div><div class="sv">${fmtDate(d.tgl)}</div></div>
   </div>`;
 
-  sh+=`<div class="sg"><div class="sl">Stok BBM Lokasi</div>
-    <div class="sr"><div class="sk">Stok Awal</div><div class="sv">${d.stokAwal} Ltr</div></div>
-    <div class="sr"><div class="sk">BBM Masuk</div><div class="sv">${d.masukCD} Ltr</div></div>
-    <div class="sr"><div class="sk">Total</div><div class="sv">${d.total} Ltr</div></div>
-    <div class="sr"><div class="sk">Keluar</div><div class="sv">${keluar||'-'} Ltr</div></div>
-    <div class="sr"><div class="sk">Sisa</div><div class="sv">${d.sisa} Ltr</div></div>
-  </div>`;
+  if(adaStokBBM){
+    sh+=`<div class="sg"><div class="sl">Stok BBM Lokasi</div>
+      <div class="sr"><div class="sk">Stok Awal</div><div class="sv">${d.stokAwal} Ltr</div></div>
+      <div class="sr"><div class="sk">BBM Masuk</div><div class="sv">${d.masukCD} Ltr</div></div>
+      <div class="sr"><div class="sk">Total</div><div class="sv">${d.total} Ltr</div></div>
+      <div class="sr"><div class="sk">Keluar</div><div class="sv">${keluar||'-'} Ltr</div></div>
+      <div class="sr"><div class="sk">Sisa</div><div class="sv">${d.sisa} Ltr</div></div>
+    </div>`;
+  }
   if(d.units.length){
     sh+=`<div class="sg"><div class="sl">Hasil Kerja</div>`;
     d.units.forEach(u=>{
@@ -743,19 +748,22 @@ function buildAndShow(d){
     if(u.ket)waUnits+=`   ${u.ket}\n`;
   });
 
-  document.getElementById('wa-text').textContent=
-`📋 *HASIL KERJA HARIAN*
-📍 ${d.lokasi}  |  ${fmtDate(d.tgl)}
-👤 ${d.nama}
-━━━━━━━━━━━━━━━
-⛽ *STOK BBM LOKASI*
+  const stokBlock=adaStokBBM
+    ?`⛽ *STOK BBM LOKASI*
 Awal     : ${d.stokAwal} Ltr
 BBM Masuk: ${d.masukCD} Ltr
 Total    : ${d.total} Ltr
 Keluar   : ${keluar||'-'} Ltr
 Sisa     : ${d.sisa} Ltr
 ━━━━━━━━━━━━━━━
-🚧 *HASIL KERJA*${waUnits||'\n   (tidak ada data unit)\n'}━━━━━━━━━━━━━━━
+`:'';
+
+  document.getElementById('wa-text').textContent=
+`📋 *HASIL KERJA HARIAN*
+📍 ${d.lokasi}  |  ${fmtDate(d.tgl)}
+👤 ${d.nama}
+━━━━━━━━━━━━━━━
+${stokBlock}🚧 *HASIL KERJA*${waUnits||'\n   (tidak ada data unit)\n'}━━━━━━━━━━━━━━━
 ${kendalaBlock}${d.cat?'\n\n📝 *Rencana Kerja Besok:*\n'+d.cat:''}
 ━━━━━━━━━━━━━━━`;
 }
