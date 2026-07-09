@@ -156,39 +156,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="nav"><button class="bn bf" id="btn-lanjut-p1" onclick="next(1)">Lanjut →</button></div>
 </div>
 
-<!-- P1C: PERTANYAAN BBM -->
-<input type="hidden" id="jenis_laporan" value="">
-<div class="panel" id="p1c">
-  <div class="card">
-    <div class="ct">Jenis Laporan</div>
-    <div style="text-align:center;padding:8px 0 16px">
-      <div style="font-size:16px;font-weight:700;color:var(--ht);margin-bottom:6px">Apakah anda mengatur pengeluaran BBM di lokasi anda?</div>
-      <div style="font-size:13px;color:#6b7280;line-height:1.5">Jawab YA jika hari ini ada pemakaian BBM untuk alat berat atau kendaraan yang kamu catat.<br>Jawab TIDAK jika tidak ada pemakaian BBM.</div>
-    </div>
-    <div style="display:flex;gap:12px;margin-top:4px">
-      <button onclick="pilihJenis('bbm')" id="btn-bbm" style="flex:1;padding:18px 10px;border-radius:var(--r);border:2px solid #d1d5db;background:#fff;cursor:pointer;font-size:15px;font-weight:700;color:#6b7280;transition:all .2s">
-        ⛽ YA
-      </button>
-      <button onclick="pilihJenis('biasa')" id="btn-biasa" style="flex:1;padding:18px 10px;border-radius:var(--r);border:2px solid #d1d5db;background:#fff;cursor:pointer;font-size:15px;font-weight:700;color:#6b7280;transition:all .2s">
-        📝 TIDAK
-      </button>
-    </div>
-  </div>
-  <div class="nav"><button class="bb" onclick="go(1)">← Kembali</button></div>
-</div>
-
-<!-- P1B: LAPORAN BIASA (kalimat bebas) -->
-<div class="panel" id="p1b">
-  <div class="card">
-    <div class="ct">📝 Hasil Kerja Hari Ini</div>
-    <div class="f">
-      <label>Uraikan hasil kerja hari ini <span class="req">*</span></label>
-      <textarea id="hasil_biasa" rows="6" placeholder="Tulis kegiatan dan hasil kerja hari ini dalam bentuk kalimat. Contoh: Hari ini melakukan pemeliharaan area workshop, membersihkan gudang, dan membantu bongkar muat material."></textarea>
-    </div>
-  </div>
-  <div class="nav"><button class="bb" onclick="go(1.2)">← Kembali</button><button class="bn" onclick="nextFromBiasa()">Lanjut →</button></div>
-</div>
-
 <!-- P2: BBM -->
 <div class="panel" id="p2">
   <div class="card">
@@ -202,14 +169,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="f"><label>Sisa (Ltr)</label><input id="stok_sisa" type="number" readonly placeholder="—"></div>
     </div>
     <div class="hint" style="margin-top:7px">Total dan Sisa dihitung otomatis</div>
+    <div class="pill" style="margin-top:10px"><div class="pill-txt">💡 Apabila tidak mengurus pengeluaran BBM, tidak perlu diisi — langsung tekan <strong>Lanjut</strong>.</div></div>
   </div>
-  <div class="nav"><button class="bb" onclick="go(1.2)">← Kembali</button><button class="bn" onclick="next(2)">Lanjut →</button></div>
+  <div class="nav"><button class="bb" onclick="go(1)">← Kembali</button><button class="bn" onclick="next(2)">Lanjut →</button></div>
 </div>
 
 <!-- P3: HASIL KERJA -->
 <div class="panel" id="p3">
   <div class="card">
     <div class="ct">🚧 Hasil Kerja</div>
+    <div class="pill" style="margin-bottom:10px"><div class="pill-txt">💡 Apabila tidak mengurus unit kendaraan & alat berat, pilih <strong>"PEKERJAAN LAINNYA"</strong> di bagian Pilih Unit paling bawah.</div></div>
     <div id="unit-list">
       <div class="unit">
         <div class="ul"><span>⚙️ Unit 1</span><button class="btn-hapus" onclick="hapusUnit(this)" title="Hapus unit ini">×</button></div>
@@ -461,51 +430,27 @@ function go(n){
 }
 
 function panelId(n){
-  if(n===1)   return 'p1';
-  if(n===1.2) return 'p1c';
-  if(n===1.5) return 'p1b';
-  if(n===2)   return 'p2';
-  if(n===3)   return 'p3';
-  if(n===4)   return 'p4';
-  if(n===5)   return 'p5';
+  if(n===1) return 'p1';
+  if(n===2) return 'p2';
+  if(n===3) return 'p3';
+  if(n===4) return 'p4';
+  if(n===5) return 'p5';
   return 'p1';
 }
 
 function updateTopbar(n){
-  const jenis=document.getElementById('jenis_laporan')?.value;
   let label='', badge='', pct=25;
-  if(n===1)  {label='Identitas';badge='1/'+(jenis==='biasa'?'4':'5');pct=20;}
-  else if(n===1.2){label='Jenis Laporan';badge=jenis==='biasa'?'2/4':'2/5';pct=40;}
-  else if(n===1.5){label='Hasil Kerja (Biasa)';badge='3/4';pct=66;}
-  else if(n===2)  {label='Stok BBM';badge='3/5';pct=60;}
-  else if(n===3)  {label='Hasil Kerja';badge='4/5';pct=80;}
-  else if(n===4)  {label='Kendala';badge=jenis==='biasa'?'4/4':'5/5';pct=100;}
-  else if(n===5)  {label='Rangkuman';badge='✓';pct=100;}
+  if(n===1){label='Identitas';badge='1/4';pct=25;}
+  else if(n===2){label='Stok BBM';badge='2/4';pct=50;}
+  else if(n===3){label='Hasil Kerja';badge='3/4';pct=75;}
+  else if(n===4){label='Kendala';badge='4/4';pct=100;}
+  else if(n===5){label='Rangkuman';badge='✓';pct=100;}
   document.getElementById('tbadge').textContent=badge;
   document.getElementById('tsub').textContent=label;
   document.getElementById('prog').style.width=pct+'%';
 }
 
 function onJenisChange(){}
-
-// Dipanggil saat staf menekan YA atau TIDAK di panel p1c
-function pilihJenis(jenis){
-  document.getElementById('jenis_laporan').value=jenis;
-
-  // Highlight tombol yang dipilih
-  const btnBbm=document.getElementById('btn-bbm');
-  const btnBiasa=document.getElementById('btn-biasa');
-  const activeStyle='border-color:var(--hd);background:var(--hl);color:var(--ht);';
-  const idleStyle='border-color:#d1d5db;background:#fff;color:#6b7280;';
-  btnBbm.style.cssText=  (jenis==='bbm'   ? activeStyle : idleStyle)+'flex:1;padding:18px 10px;border-radius:var(--r);cursor:pointer;font-size:15px;font-weight:700;transition:all .2s;';
-  btnBiasa.style.cssText=(jenis==='biasa' ? activeStyle : idleStyle)+'flex:1;padding:18px 10px;border-radius:var(--r);cursor:pointer;font-size:15px;font-weight:700;transition:all .2s;';
-
-  if(jenis==='bbm'){
-    go(2); // → Stok BBM (p2)
-  } else {
-    go(1.5); // → Hasil Kerja Biasa (p1b)
-  }
-}
 
 function next(from){
   if(from===1){
@@ -520,20 +465,24 @@ function next(from){
     if(picked>today){ alert('Tanggal laporan tidak boleh lebih dari hari ini (tidak boleh tanggal besok).'); return; }
     if(picked<min){ alert('Tanggal laporan maksimal 7 hari ke belakang dari hari ini.'); return; }
 
-    go(1.2); // → Panel pertanyaan BBM (p1c)
+    go(2);
+    return;
+  }
+  if(from===3){
+    const unitTerpilih=document.querySelectorAll('#unit-list .unit-alat');
+    const adaYangTerisi=[...unitTerpilih].some(s=>s.value.trim()!=='');
+    if(!adaYangTerisi){
+      alert('Minimal 1 unit harus dipilih.\n\nJika tidak mengurus kendaraan atau alat berat, pilih "PEKERJAAN LAINNYA" di bagian Pilih Unit paling bawah.');
+      return;
+    }
+    go(4);
     return;
   }
   go(from+1);
 }
 
-function nextFromBiasa(){
-  if(!v('hasil_biasa')){alert('Uraian hasil kerja wajib diisi');return}
-  go(4); // → Kendala (p4)
-}
-
 function backFromKendala(){
-  const jenis=v('jenis_laporan');
-  if(jenis==='biasa'){ go(1.5); } else { go(3); }
+  go(3);
 }
 
 function v(id){return document.getElementById(id)?.value.trim()||''}
@@ -661,8 +610,7 @@ function getUnits(){
 function collectData(){
   return{
     nama:v('nama'),lokasi:v('lokasi'),tgl:v('tgl'),
-    jenis:v('jenis_laporan'),
-    hasilBiasa:v('hasil_biasa'),
+    jenis:'bbm',
     stokAwal:v('stok_awal')||'0',masukCD:v('masuk_cd')||'0',
     total:v('stok_total')||'0',sisa:v('stok_sisa')||'-',
     units:getUnits(),
@@ -742,7 +690,6 @@ function cekKonfirmasi(){
 
 function buildAndShow(d){
   d=d||collectData();
-  const isBiasa = d.jenis==='biasa';
   let keluar=0; d.units.forEach(u=>keluar+=(+u.bbm||0));
 
   // ---- Summary card ----
@@ -751,28 +698,21 @@ function buildAndShow(d){
     <div class="sr"><div class="sk">Karyawan</div><div class="sv">${d.nama}</div></div>
     <div class="sr"><div class="sk">Lokasi</div><div class="sv">${d.lokasi}</div></div>
     <div class="sr"><div class="sk">Tanggal</div><div class="sv">${fmtDate(d.tgl)}</div></div>
-    <div class="sr"><div class="sk">Jenis Laporan</div><div class="sv">${isBiasa?'Hasil Kerja Biasa':'Hasil Kerja BBM'}</div></div>
   </div>`;
 
-  if(isBiasa){
-    sh+=`<div class="sg"><div class="sl">Hasil Kerja</div>
-      <div class="sr"><div class="sk" style="max-width:100%">${d.hasilBiasa}</div></div>
-    </div>`;
-  } else {
-    sh+=`<div class="sg"><div class="sl">Stok BBM Lokasi</div>
-      <div class="sr"><div class="sk">Stok Awal</div><div class="sv">${d.stokAwal} Ltr</div></div>
-      <div class="sr"><div class="sk">BBM Masuk</div><div class="sv">${d.masukCD} Ltr</div></div>
-      <div class="sr"><div class="sk">Total</div><div class="sv">${d.total} Ltr</div></div>
-      <div class="sr"><div class="sk">Keluar</div><div class="sv">${keluar||'-'} Ltr</div></div>
-      <div class="sr"><div class="sk">Sisa</div><div class="sv">${d.sisa} Ltr</div></div>
-    </div>`;
-    if(d.units.length){
-      sh+=`<div class="sg"><div class="sl">Hasil Kerja</div>`;
-      d.units.forEach(u=>{
-        sh+=`<div class="sr"><div class="sk">${u.alat}${u.opr?' / '+u.opr:''}</div><div class="sv">BBM:${u.bbm}L · ${u.prod} ${u.sat}</div></div>`;
-      });
-      sh+=`</div>`;
-    }
+  sh+=`<div class="sg"><div class="sl">Stok BBM Lokasi</div>
+    <div class="sr"><div class="sk">Stok Awal</div><div class="sv">${d.stokAwal} Ltr</div></div>
+    <div class="sr"><div class="sk">BBM Masuk</div><div class="sv">${d.masukCD} Ltr</div></div>
+    <div class="sr"><div class="sk">Total</div><div class="sv">${d.total} Ltr</div></div>
+    <div class="sr"><div class="sk">Keluar</div><div class="sv">${keluar||'-'} Ltr</div></div>
+    <div class="sr"><div class="sk">Sisa</div><div class="sv">${d.sisa} Ltr</div></div>
+  </div>`;
+  if(d.units.length){
+    sh+=`<div class="sg"><div class="sl">Hasil Kerja</div>`;
+    d.units.forEach(u=>{
+      sh+=`<div class="sr"><div class="sk">${u.alat}${u.opr?' / '+u.opr:''}</div><div class="sv">BBM:${u.bbm}L · ${u.prod} ${u.sat}</div></div>`;
+    });
+    sh+=`</div>`;
   }
   document.getElementById('sum-card').innerHTML=sh;
 
@@ -781,23 +721,19 @@ function buildAndShow(d){
     ?`⚠️ *Kendala:*\n${d.ku||'-'}${d.ks?'\n🔧 Solusi: '+d.ks:''}`
     :`✅ Tidak ada kendala`;
 
-  let waBody='';
-  if(isBiasa){
-    waBody=
-`📝 *HASIL KERJA*
-${d.hasilBiasa}
+  let waUnits='';
+  d.units.forEach(u=>{
+    waUnits+=`\n⚙️ *${u.alat}*${u.opr?' ('+u.opr+')':''}\n`;
+    waUnits+=`   BBM: ${u.bbm} Ltr  |  Hasil: ${u.prod} ${u.sat}\n`;
+    if(u.ket)waUnits+=`   ${u.ket}\n`;
+  });
+
+  document.getElementById('wa-text').textContent=
+`📋 *HASIL KERJA HARIAN*
+📍 ${d.lokasi}  |  ${fmtDate(d.tgl)}
+👤 ${d.nama}
 ━━━━━━━━━━━━━━━
-${kendalaBlock}${d.cat?'\n\n📝 *Rencana Kerja Besok:*\n'+d.cat:''}
-━━━━━━━━━━━━━━━`;
-  } else {
-    let waUnits='';
-    d.units.forEach(u=>{
-      waUnits+=`\n⚙️ *${u.alat}*${u.opr?' ('+u.opr+')':''}\n`;
-      waUnits+=`   BBM: ${u.bbm} Ltr  |  Hasil: ${u.prod} ${u.sat}\n`;
-      if(u.ket)waUnits+=`   ${u.ket}\n`;
-    });
-    waBody=
-`⛽ *STOK BBM LOKASI*
+⛽ *STOK BBM LOKASI*
 Awal     : ${d.stokAwal} Ltr
 BBM Masuk: ${d.masukCD} Ltr
 Total    : ${d.total} Ltr
@@ -807,14 +743,6 @@ Sisa     : ${d.sisa} Ltr
 🚧 *HASIL KERJA*${waUnits||'\n   (tidak ada data unit)\n'}━━━━━━━━━━━━━━━
 ${kendalaBlock}${d.cat?'\n\n📝 *Rencana Kerja Besok:*\n'+d.cat:''}
 ━━━━━━━━━━━━━━━`;
-  }
-
-  document.getElementById('wa-text').textContent=
-`📋 *HASIL KERJA HARIAN*
-📍 ${d.lokasi}  |  ${fmtDate(d.tgl)}
-👤 ${d.nama}
-━━━━━━━━━━━━━━━
-${waBody}`;
 }
 
 function kunciForm(){
@@ -886,12 +814,11 @@ function resetAll(){
   if(chk)chk.checked=false;
   const box=document.getElementById('rk-confirm');
   if(box){box.style.borderColor='';box.style.background='';}
-  ['stok_awal','masuk_cd','stok_total','stok_sisa','kendala_urai','kendala_sol','catatan','hasil_biasa'].forEach(id=>{
+  ['stok_awal','masuk_cd','stok_total','stok_sisa','kendala_urai','kendala_sol','catatan'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value='';
   });
   document.getElementById('nama').value='';
   document.getElementById('lokasi').value='';
-  document.getElementById('jenis_laporan').value='';
   const idleStyle='flex:1;padding:18px 10px;border-radius:var(--r);cursor:pointer;font-size:15px;font-weight:700;border:2px solid #d1d5db;background:#fff;color:#6b7280;transition:all .2s;';
   const btnBbm=document.getElementById('btn-bbm');
   const btnBiasa=document.getElementById('btn-biasa');
