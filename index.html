@@ -697,8 +697,14 @@ function cekKonfirmasi(){
     statusEl.style.display='flex';
     if(res && res.status==='ok'){
       statusEl.innerHTML='<div class="pill-txt">✅ Data tersimpan di Google Sheets.</div>';
+    } else if(res && res.status==='duplicate'){
+      statusEl.innerHTML='<div class="pill-txt">⚠️ Laporan untuk nama dan tanggal ini sudah pernah dikirim (duplikat). Data tidak disimpan ulang. Jika keliru, hubungi admin.</div>';
+    } else if(res && res.status==='method_not_allowed'){
+      statusEl.innerHTML='<div class="pill-txt">❌ Error: POST diredirect jadi GET. Hubungi admin — perlu pengecekan deployment Apps Script.</div>';
+    } else if(res && res.status==='error'){
+      statusEl.innerHTML='<div class="pill-txt">❌ Error dari server: '+(res.message||'tidak diketahui')+'. Hubungi admin.</div>';
     } else {
-      statusEl.innerHTML='<div class="pill-txt">⚠️ Data mungkin belum tersimpan — cek koneksi internet dan hubungi admin jika perlu.</div>';
+      statusEl.innerHTML='<div class="pill-txt">⚠️ Respons tidak dikenal dari server. Cek koneksi atau hubungi admin.</div>';
     }
   });
 }
