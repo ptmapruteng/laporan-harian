@@ -186,7 +186,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <textarea id="hasil_biasa" rows="6" placeholder="Tulis kegiatan dan hasil kerja hari ini dalam bentuk kalimat. Contoh: Hari ini melakukan pemeliharaan area workshop, membersihkan gudang, dan membantu bongkar muat material."></textarea>
     </div>
   </div>
-  <div class="nav"><button class="bb" onclick="go(1.5)">← Kembali</button><button class="bn" onclick="nextFromBiasa()">Lanjut →</button></div>
+  <div class="nav"><button class="bb" onclick="go(1.2)">← Kembali</button><button class="bn" onclick="nextFromBiasa()">Lanjut →</button></div>
 </div>
 
 <!-- P2: BBM -->
@@ -203,7 +203,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
     <div class="hint" style="margin-top:7px">Total dan Sisa dihitung otomatis</div>
   </div>
-  <div class="nav"><button class="bb" onclick="go(1.5)">← Kembali</button><button class="bn" onclick="next(2)">Lanjut →</button></div>
+  <div class="nav"><button class="bb" onclick="go(1.2)">← Kembali</button><button class="bn" onclick="next(2)">Lanjut →</button></div>
 </div>
 
 <!-- P3: HASIL KERJA -->
@@ -461,13 +461,13 @@ function go(n){
 }
 
 function panelId(n){
-  if(n===1) return 'p1';
-  if(n===1.5) return 'p1c';
-  if(n===2) return 'p1b';
-  if(n===3) return 'p2';
-  if(n===4) return 'p3';
-  if(n===5) return 'p4';
-  if(n===6) return 'p5';
+  if(n===1)   return 'p1';
+  if(n===1.2) return 'p1c';
+  if(n===1.5) return 'p1b';
+  if(n===2)   return 'p2';
+  if(n===3)   return 'p3';
+  if(n===4)   return 'p4';
+  if(n===5)   return 'p5';
   return 'p1';
 }
 
@@ -475,12 +475,12 @@ function updateTopbar(n){
   const jenis=document.getElementById('jenis_laporan')?.value;
   let label='', badge='', pct=25;
   if(n===1)  {label='Identitas';badge='1/'+(jenis==='biasa'?'4':'5');pct=20;}
-  else if(n===1.5){label='Jenis Laporan';badge=jenis==='biasa'?'2/4':'2/5';pct=40;}
-  else if(n===2)  {label='Hasil Kerja (Biasa)';badge='3/4';pct=66;}
-  else if(n===3)  {label='Stok BBM';badge='3/5';pct=60;}
-  else if(n===4)  {label='Hasil Kerja';badge='4/5';pct=80;}
-  else if(n===5)  {label='Kendala';badge=jenis==='biasa'?'4/4':'5/5';pct=100;}
-  else if(n===6)  {label='Rangkuman';badge='✓';pct=100;}
+  else if(n===1.2){label='Jenis Laporan';badge=jenis==='biasa'?'2/4':'2/5';pct=40;}
+  else if(n===1.5){label='Hasil Kerja (Biasa)';badge='3/4';pct=66;}
+  else if(n===2)  {label='Stok BBM';badge='3/5';pct=60;}
+  else if(n===3)  {label='Hasil Kerja';badge='4/5';pct=80;}
+  else if(n===4)  {label='Kendala';badge=jenis==='biasa'?'4/4':'5/5';pct=100;}
+  else if(n===5)  {label='Rangkuman';badge='✓';pct=100;}
   document.getElementById('tbadge').textContent=badge;
   document.getElementById('tsub').textContent=label;
   document.getElementById('prog').style.width=pct+'%';
@@ -500,11 +500,10 @@ function pilihJenis(jenis){
   btnBbm.style.cssText=  (jenis==='bbm'   ? activeStyle : idleStyle)+'flex:1;padding:18px 10px;border-radius:var(--r);cursor:pointer;font-size:15px;font-weight:700;transition:all .2s;';
   btnBiasa.style.cssText=(jenis==='biasa' ? activeStyle : idleStyle)+'flex:1;padding:18px 10px;border-radius:var(--r);cursor:pointer;font-size:15px;font-weight:700;transition:all .2s;';
 
-  // Langsung navigasi ke section yang sesuai
   if(jenis==='bbm'){
-    go(3); // → Stok BBM
+    go(2); // → Stok BBM (p2)
   } else {
-    go(2); // → Hasil Kerja Biasa
+    go(1.5); // → Hasil Kerja Biasa (p1b)
   }
 }
 
@@ -521,7 +520,7 @@ function next(from){
     if(picked>today){ alert('Tanggal laporan tidak boleh lebih dari hari ini (tidak boleh tanggal besok).'); return; }
     if(picked<min){ alert('Tanggal laporan maksimal 7 hari ke belakang dari hari ini.'); return; }
 
-    go(1.5); // → Panel pertanyaan BBM
+    go(1.2); // → Panel pertanyaan BBM (p1c)
     return;
   }
   go(from+1);
@@ -529,12 +528,12 @@ function next(from){
 
 function nextFromBiasa(){
   if(!v('hasil_biasa')){alert('Uraian hasil kerja wajib diisi');return}
-  go(5); // → Kendala
+  go(4); // → Kendala (p4)
 }
 
 function backFromKendala(){
   const jenis=v('jenis_laporan');
-  if(jenis==='biasa'){ go(2); } else { go(4); } // kembali ke biasa atau hasil kerja BBM
+  if(jenis==='biasa'){ go(1.5); } else { go(3); }
 }
 
 function v(id){return document.getElementById(id)?.value.trim()||''}
