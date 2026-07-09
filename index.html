@@ -469,12 +469,27 @@ function next(from){
     return;
   }
   if(from===3){
-    const unitTerpilih=document.querySelectorAll('#unit-list .unit-alat');
-    const adaYangTerisi=[...unitTerpilih].some(s=>s.value.trim()!=='');
+    const units=document.querySelectorAll('#unit-list .unit');
+    const adaYangTerisi=[...units].some(u=>u.querySelector('.unit-alat')?.value.trim()!=='');
     if(!adaYangTerisi){
       alert('Minimal 1 unit harus dipilih.\n\nJika tidak mengurus kendaraan atau alat berat, pilih "PEKERJAAN LAINNYA" di bagian Pilih Unit paling bawah.');
       return;
     }
+
+    // Validasi: jika pilih PEKERJAAN LAINNYA, Keterangan Kegiatan wajib diisi
+    let adaPekerjaanLainnyaTanpaKet=false;
+    units.forEach(u=>{
+      const alat=u.querySelector('.unit-alat')?.value.trim();
+      const ket=u.querySelector('.unit-ket')?.value.trim();
+      if(alat==='PEKERJAAN LAINNYA' && !ket){
+        adaPekerjaanLainnyaTanpaKet=true;
+      }
+    });
+    if(adaPekerjaanLainnyaTanpaKet){
+      alert('⚠️ Keterangan Kegiatan wajib diisi jika memilih "PEKERJAAN LAINNYA".\n\nSilakan isi kolom Keterangan Kegiatan terlebih dahulu.');
+      return;
+    }
+
     go(4);
     return;
   }
