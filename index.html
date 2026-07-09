@@ -476,17 +476,17 @@ function next(from){
       return;
     }
 
-    // Validasi: jika pilih PEKERJAAN LAINNYA, Keterangan Kegiatan wajib diisi
-    let adaPekerjaanLainnyaTanpaKet=false;
-    units.forEach(u=>{
+    // Validasi: semua unit yang sudah dipilih wajib mengisi Keterangan Kegiatan
+    let unitTanpaKet='';
+    units.forEach((u,i)=>{
       const alat=u.querySelector('.unit-alat')?.value.trim();
       const ket=u.querySelector('.unit-ket')?.value.trim();
-      if(alat==='PEKERJAAN LAINNYA' && !ket){
-        adaPekerjaanLainnyaTanpaKet=true;
+      if(alat && !ket){
+        unitTanpaKet+=(unitTanpaKet?', ':'')+'Unit '+(i+1)+' ('+alat+')';
       }
     });
-    if(adaPekerjaanLainnyaTanpaKet){
-      alert('⚠️ Keterangan Kegiatan wajib diisi jika memilih "PEKERJAAN LAINNYA".\n\nSilakan isi kolom Keterangan Kegiatan terlebih dahulu.');
+    if(unitTanpaKet){
+      alert('⚠️ Keterangan Kegiatan wajib diisi untuk semua unit yang dipilih.\n\nBelum diisi:\n'+unitTanpaKet);
       return;
     }
 
