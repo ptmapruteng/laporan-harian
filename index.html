@@ -638,16 +638,18 @@ function collectData(){
 }
 
 function kirimKeServer(d, onResult){
-  // fetch() biasa. Ini hanya bisa diandalkan kalau form di-hosting di HTTPS
-  // (mis. GitHub Pages) — tidak akan jalan kalau dibuka dari file:// lokal.
   fetch(GAS_URL,{
     method:'POST',
-    headers:{'Content-Type':'text/plain;charset=utf-8'}, // hindari preflight CORS
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
     body:JSON.stringify(d)
   })
-  .then(r=>r.json())
+  .then(r=>r.text())
+  .then(txt=>{
+    try{ return JSON.parse(txt); }
+    catch(e){ return {status:'error',message:'Respons server tidak valid. Coba lagi.'}; }
+  })
   .then(res=>onResult(res))
-  .catch(()=>onResult({status:'error'}));
+  .catch(()=>onResult({status:'error',message:'Gagal terhubung ke server. Cek koneksi internet.'}));
 }
 
 function cekKonfirmasi(){
@@ -690,21 +692,28 @@ function cekKonfirmasi(){
     sedangKirim=false;
     if(btn){btn.disabled=false;btn.textContent='Lihat Rangkuman →';}
 
-    buildAndShow(d);
-    go(5);
-    kunciForm();
-    const statusEl=document.getElementById('gs-status');
-    statusEl.style.display='flex';
     if(res && res.status==='ok'){
+      // Berhasil: tampilkan rangkuman dan kunci form
+      buildAndShow(d);
+      go(5);
+      kunciForm();
+      const statusEl=document.getElementById('gs-status');
+      statusEl.style.display='flex';
       statusEl.innerHTML='<div class="pill-txt">✅ Data tersimpan di Google Sheets.</div>';
+
     } else if(res && res.status==='duplicate'){
-      statusEl.innerHTML='<div class="pill-txt">⚠️ Laporan untuk nama dan tanggal ini sudah pernah dikirim (duplikat). Data tidak disimpan ulang. Jika keliru, hubungi admin.</div>';
-    } else if(res && res.status==='method_not_allowed'){
-      statusEl.innerHTML='<div class="pill-txt">❌ Error: POST diredirect jadi GET. Hubungi admin — perlu pengecekan deployment Apps Script.</div>';
-    } else if(res && res.status==='error'){
-      statusEl.innerHTML='<div class="pill-txt">❌ Error dari server: '+(res.message||'tidak diketahui')+'. Hubungi admin.</div>';
+      // Duplikat: tampilkan rangkuman tapi beri tahu staf
+      buildAndShow(d);
+      go(5);
+      kunciForm();
+      const statusEl=document.getElementById('gs-status');
+      statusEl.style.display='flex';
+      statusEl.innerHTML='<div class="pill-txt">⚠️ Laporan untuk nama dan tanggal ini sudah pernah dikirim sebelumnya. Data tidak disimpan ulang. Hubungi admin jika ini keliru.</div>';
+
     } else {
-      statusEl.innerHTML='<div class="pill-txt">⚠️ Respons tidak dikenal dari server. Cek koneksi atau hubungi admin.</div>';
+      // Gagal: JANGAN kunci form, tetap di halaman Kendala, beri tahu staf untuk coba lagi
+      const msg=res && res.message ? res.message : 'Tidak diketahui.';
+      alert('❌ Laporan GAGAL tersimpan ke Google Sheets.\n\nPenyebab: '+msg+'\n\nSilakan tekan "Lihat Rangkuman →" sekali lagi untuk mencoba ulang.\nJika terus gagal, hubungi admin.');
     }
   });
 }
