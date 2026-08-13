@@ -645,11 +645,16 @@ function kirimKeServer(d, onResult){
   })
   .then(r=>r.text())
   .then(txt=>{
-    try{ return JSON.parse(txt); }
-    catch(e){ return {status:'error',message:'Respons server tidak valid. Coba lagi.'}; }
+    try{
+      return JSON.parse(txt);
+    }catch(e){
+      // Tampilkan 120 karakter pertama dari respons (strip HTML tag) untuk membantu diagnosis
+      const preview=txt.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,120);
+      return {status:'error',message:'Server merespons bukan JSON: '+preview};
+    }
   })
   .then(res=>onResult(res))
-  .catch(()=>onResult({status:'error',message:'Gagal terhubung ke server. Cek koneksi internet.'}));
+  .catch(err=>onResult({status:'error',message:'Koneksi gagal: '+(err.message||'tidak diketahui')+'. Cek internet.'}));
 }
 
 function cekKonfirmasi(){
