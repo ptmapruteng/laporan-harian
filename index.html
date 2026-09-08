@@ -472,7 +472,7 @@ function next(from){
   }
   if(from===3){
     const units=document.querySelectorAll('#unit-list .unit');
-    const adaYangTerisi=[...units].some(u=>u.querySelector('.unit-alat')?.value.trim()!=='');
+    const adaYangTerisi=[...units].some(function(u){var el=u.querySelector('.unit-alat');return el&&el.value.trim()!=='';});
     if(!adaYangTerisi){
       alert('Minimal 1 unit harus dipilih.\n\nJika tidak mengurus kendaraan atau alat berat, pilih "PEKERJAAN LAINNYA" di bagian Pilih Unit paling bawah.');
       return;
@@ -480,9 +480,11 @@ function next(from){
 
     // Validasi: semua unit yang sudah dipilih wajib mengisi Keterangan Kegiatan
     let unitTanpaKet='';
-    units.forEach((u,i)=>{
-      const alat=u.querySelector('.unit-alat')?.value.trim();
-      const ket=u.querySelector('.unit-ket')?.value.trim();
+    units.forEach(function(u,i){
+      var eAlat=u.querySelector('.unit-alat');
+      var eKet=u.querySelector('.unit-ket');
+      var alat=eAlat?eAlat.value.trim():'';
+      var ket=eKet?eKet.value.trim():'';
       if(alat && !ket){
         unitTanpaKet+=(unitTanpaKet?', ':'')+'Unit '+(i+1)+' ('+alat+')';
       }
@@ -502,7 +504,7 @@ function backFromKendala(){
   go(3);
 }
 
-function v(id){return document.getElementById(id)?.value.trim()||''}
+function v(id){var el=document.getElementById(id);return el?el.value.trim():''}
 
 function calcBBM(){
   const a=+document.getElementById('stok_awal').value||0;
@@ -601,8 +603,9 @@ function renumberUnits(){
 
 function showKendala(show){
   document.getElementById('kd').style.display=show?'block':'none';
-  document.querySelectorAll('.ro').forEach(el=>el.classList.remove('sel'));
-  document.querySelector('[name=ada_kendala]:checked')?.closest('.ro')?.classList.add('sel');
+  document.querySelectorAll('.ro').forEach(function(el){el.classList.remove('sel');});
+  var checked=document.querySelector('[name=ada_kendala]:checked');
+  if(checked){var ro=checked.closest('.ro');if(ro)ro.classList.add('sel');}
 }
 
 function fmtDate(d){
@@ -615,12 +618,12 @@ function fmtDateFile(d){return d?d.replace(/-/g,''):''}
 
 function getUnits(){
   return Array.from(document.querySelectorAll('#unit-list .unit')).map(b=>({
-    alat:b.querySelector('.unit-alat')?.value.trim()||'',
-    opr:b.querySelector('.unit-opr')?.value.trim()||'',
-    bbm:b.querySelector('.unit-bbm')?.value.trim()||'0',
-    prod:b.querySelector('.unit-prod')?.value.trim()||'-',
-    sat:b.querySelector('.unit-sat')?.value||'m3',
-    ket:b.querySelector('.unit-ket')?.value.trim()||''
+    alat:(b.querySelector('.unit-alat')||{value:''}).value.trim()||'',
+    opr:(b.querySelector('.unit-opr')||{value:''}).value.trim()||'',
+    bbm:(b.querySelector('.unit-bbm')||{value:'0'}).value.trim()||'0',
+    prod:(b.querySelector('.unit-prod')||{value:'-'}).value.trim()||'-',
+    sat:(b.querySelector('.unit-sat')||{value:'m3'}).value||'m3',
+    ket:(b.querySelector('.unit-ket')||{value:''}).value.trim()||''
   })).filter(u=>u.alat);
 }
 
@@ -631,11 +634,9 @@ function collectData(){
     stokAwal:v('stok_awal')||'0',masukCD:v('masuk_cd')||'0',
     total:v('stok_total')||'0',sisa:v('stok_sisa')||'-',
     units:getUnits(),
-    rkVal:document.querySelector('[name=ada_kendala]:checked')?.value||'',
+    rkVal:(function(){var el=document.querySelector('[name=ada_kendala]:checked');return el?el.value:''})()||'',
     ku:v('kendala_urai'),ks:v('kendala_sol'),cat:v('catatan'),
-    pernyataan: document.getElementById('konfirmasi')?.checked
-      ? 'SAYA MENYATAKAN TELAH MENGISI LAPORAN HASIL KERJA DENGAN BENAR'
-      : ''
+    pernyataan: (function(){var el=document.getElementById('konfirmasi');return el&&el.checked?'SAYA MENYATAKAN TELAH MENGISI LAPORAN HASIL KERJA DENGAN BENAR':''})()
   };
 }
 
