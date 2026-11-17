@@ -114,7 +114,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <option>Fransiskus Jemisil</option>
         <option>Gregorius Aris Tasak</option>
         <option>Jemmy Imanuel Elim</option>
-        <option>Ketua Rajapati Yeremias</option>
+
         <option>Lilis Sulistiowati</option>
         <option>Merliana Elsani</option>
         <option>Nikita Lydia Noviani Sumito</option>
@@ -392,6 +392,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbzxoBZhgr8yrhXzLKcmpepQ
 let cur=1;
 let sudahSubmit=false; // mencegah kirim ganda / edit setelah submit
 let sedangKirim=false; // mencegah submit dobel kalau tombol ditekan berkali-kali
+let subIdLaporan=null; // ID unik per laporan, supaya kirim ulang tidak dianggap duplikat
 const labels=['','Identitas','Stok BBM','Hasil Kerja','Kendala','Rangkuman'];
 
 // ===== Batasan tanggal: hari ini s/d 7 hari ke belakang, tidak boleh besok =====
@@ -638,28 +639,56 @@ function collectData(){
     units:getUnits(),
     rkVal:(function(){var el=document.querySelector('[name=ada_kendala]:checked');return el?el.value:''})()||'',
     ku:v('kendala_urai'),ks:v('kendala_sol'),cat:v('catatan'),
-    pernyataan: (function(){var el=document.getElementById('konfirmasi');return el&&el.checked?'SAYA MENYATAKAN TELAH MENGISI LAPORAN HASIL KERJA DENGAN BENAR':''})()
+    pernyataan: (function(){var el=document.getElementById('konfirmasi');return el&&el.checked?'SAYA MENYATAKAN TELAH MENGISI LAPORAN HASIL KERJA DENGAN BENAR':''})(),
+    subId: subIdLaporan
   };
 }
 
-function kirimKeServer(d, onResult){
+function kirimSekali(d, onResult){
+  // Satu kali percobaan kirim, dengan batas waktu 25 detik
+  var selesai=false;
+  var timer=setTimeout(function(){
+    if(selesai)return; selesai=true;
+    onResult({status:'error',net:true,message:'Waktu tunggu habis (sinyal lemah).'});
+  },25000);
+  function akhir(res){
+    if(selesai)return; selesai=true; clearTimeout(timer); onResult(res);
+  }
   fetch(GAS_URL,{
     method:'POST',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
     body:JSON.stringify(d)
   })
-  .then(r=>r.text())
-  .then(txt=>{
+  .then(function(r){return r.text();})
+  .then(function(txt){
     try{
-      return JSON.parse(txt);
+      akhir(JSON.parse(txt));
     }catch(e){
-      // Tampilkan 120 karakter pertama dari respons (strip HTML tag) untuk membantu diagnosis
-      const preview=txt.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,120);
-      return {status:'error',message:'Server merespons bukan JSON: '+preview};
+      var preview=txt.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().substring(0,120);
+      akhir({status:'error',message:'Server merespons bukan JSON: '+preview});
     }
   })
-  .then(res=>onResult(res))
-  .catch(err=>onResult({status:'error',message:'Koneksi gagal: '+(err.message||'tidak diketahui')+'. Cek internet.'}));
+  .catch(function(err){
+    akhir({status:'error',net:true,message:'Koneksi gagal: '+(err.message||'tidak diketahui')});
+  });
+}
+
+function kirimKeServer(d, onResult, onProgress){
+  // Coba sampai 3 kali kalau gagal karena jaringan. Aman diulang: server mengenali
+  // laporan yang sama lewat subId, jadi tidak akan tercatat dobel.
+  var maks=3, ke=0;
+  function coba(){
+    ke++;
+    if(onProgress)onProgress(ke,maks);
+    kirimSekali(d,function(res){
+      if(res && res.net && ke<maks){
+        setTimeout(coba, ke*3000);
+        return;
+      }
+      onResult(res);
+    });
+  }
+  coba();
 }
 
 function cekKonfirmasi(){
@@ -682,6 +711,7 @@ function cekKonfirmasi(){
   box.style.borderColor='';
   box.style.background='';
 
+  if(!subIdLaporan){subIdLaporan='r'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
   const d=collectData();
   if(!d.nama||!d.tgl){
     alert('Nama dan Tanggal belum lengkap. Silakan kembali ke langkah Identitas terlebih dahulu.');
@@ -723,8 +753,11 @@ function cekKonfirmasi(){
     } else {
       // Gagal: JANGAN kunci form, tetap di halaman Kendala, beri tahu staf untuk coba lagi
       const msg=res && res.message ? res.message : 'Tidak diketahui.';
-      alert('❌ Laporan GAGAL tersimpan ke Google Sheets.\n\nPenyebab: '+msg+'\n\nSilakan tekan "Lihat Rangkuman →" sekali lagi untuk mencoba ulang.\nJika terus gagal, hubungi admin.');
+      var tambahan=res && res.net ? '\n\nData MUNGKIN sudah tersimpan. Tekan "Lihat Rangkuman →" sekali lagi setelah sinyal membaik — aman, laporan tidak akan tercatat dobel.' : '\n\nSilakan tekan "Lihat Rangkuman →" sekali lagi untuk mencoba ulang.';
+      alert('❌ Laporan GAGAL dikonfirmasi ke Google Sheets.\n\nPenyebab: '+msg+tambahan+'\nJika terus gagal, hubungi admin.');
     }
+  },function(ke,maks){
+    if(btn){btn.textContent=ke>1?('⏳ Mengirim... (percobaan '+ke+'/'+maks+')'):'⏳ Mengirim...';}
   });
 }
 
@@ -851,6 +884,7 @@ function resetAll(){
   document.getElementById('gs-status').style.display='none';
   sudahSubmit=false;
   sedangKirim=false;
+  subIdLaporan=null;
   const btnKembali=document.getElementById('btn-kembali-edit');
   if(btnKembali){
     btnKembali.disabled=false;
